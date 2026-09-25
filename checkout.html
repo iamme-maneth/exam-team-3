@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — RideNow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink:{900:'#0A0A0F',800:'#12121A',700:'#1A1A24',600:'#242430'}, neon:{purple:'#A855F7',cyan:'#22D3EE',pink:'#EC4899'} },
+      fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { glow:'0 0 40px rgba(168,85,247,.35)' }
+    }}}
+  </script>
+  <style>
+    body { font-family:'Inter',sans-serif; background:#0A0A0F; color:#E5E7EB; overflow-x:hidden; }
+    .orb { position:fixed; border-radius:9999px; filter:blur(120px); opacity:.3; pointer-events:none; z-index:0; animation:float 20s ease-in-out infinite; }
+    .orb-1 { width:500px; height:500px; background:#A855F7; top:-200px; left:-200px; }
+    .orb-2 { width:400px; height:400px; background:#22D3EE; bottom:-150px; right:-150px; animation-delay:-7s; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.1);} 66%{transform:translate(-40px,50px) scale(.95);} }
+    .glass { background:rgba(26,26,36,.55); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); }
+    .glass-strong { background:rgba(18,18,26,.85); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); }
+    .input-dark { background:rgba(10,10,15,.6); border:1px solid rgba(255,255,255,.08); color:#E5E7EB; transition:all .2s ease; }
+    .input-dark::placeholder { color:#6B7280; }
+    .input-dark:focus { outline:none; border-color:#A855F7; box-shadow:0 0 0 3px rgba(168,85,247,.15); background:rgba(10,10,15,.8); }
+    .gradient-text { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .btn-gradient { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); color:#fff; font-weight:600; transition:all .3s ease; }
+    .btn-gradient:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(168,85,247,.4); }
+    .pay-option { transition:all .2s ease; cursor:pointer; }
+    .pay-option:hover { background:rgba(255,255,255,.05); }
+    .pay-option.selected { border-color:#A855F7; background:rgba(168,85,247,.08); }
+    .pulse-dot { width:8px; height:8px; background:#22D3EE; border-radius:50%; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,211,238,.7);} 70%{box-shadow:0 0 0 12px rgba(34,211,238,0);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <header class="relative z-10 px-4 sm:px-8 py-5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="available-rides.html" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow">
+          <i class="fa-solid fa-bolt text-white text-lg"></i>
+        </div>
+        <span class="font-display text-2xl font-bold text-white">Ride<span class="gradient-text">Now</span></span>
+      </a>
+      <a href="available-rides.html" class="text-sm text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back</a>
+    </div>
+  </header>
+
+  <main class="relative z-10 px-4 sm:px-8 py-8">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs mb-4">
+          <span class="pulse-dot"></span>
+          <span class="text-gray-300">Step 2 of 3 · Confirm & pay</span>
+        </div>
+        <h1 class="font-display text-3xl sm:text-4xl font-bold text-white mb-2">Complete your <span class="gradient-text">booking</span></h1>
+        <p class="text-gray-400 text-sm">Fill in your details and choose a payment method.</p>
+      </div>
+
+      <form id="checkoutForm" class="grid lg:grid-cols-3 gap-6">
+
+        <!-- LEFT: Personal info + payment -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Personal info -->
+          <div class="glass-strong rounded-2xl p-6 sm:p-8">
+            <h2 class="font-display text-lg font-semibold text-white mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-user text-neon-purple"></i> Passenger details
+            </h2>
+            <p class="text-xs text-gray-500 mb-6">The driver will use this to contact you.</p>
+
+            <div class="space-y-4">
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Full name</label>
+                  <input id="paxName" type="text" required placeholder="Your full name" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Phone number</label>
+                  <input id="paxPhone" type="tel" required placeholder="+855 12 345 678" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Email (for receipt)</label>
+                <input id="paxEmail" type="email" required placeholder="you@example.com" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Note for driver (optional)</label>
+                <textarea id="paxNote" rows="2" placeholder="e.g. I'm wearing a red shirt, standing near the coffee shop" class="input-dark w-full px-4 py-3 rounded-xl text-sm resize-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment method -->
+          <div class="glass-strong rounded-2xl p-6 sm:p-8">
+            <h2 class="font-display text-lg font-semibold text-white mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-credit-card text-neon-cyan"></i> Payment method
+            </h2>
+            <p class="text-xs text-gray-500 mb-6">Choose how you'd like to pay.</p>
+
+            <!-- Tabs -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <button type="button" data-pay="khqr" class="pay-option selected glass rounded-xl p-3 text-center border-2 border-transparent">
+                <i class="fa-solid fa-qrcode text-xl text-neon-purple mb-1 block"></i>
+                <div class="text-xs font-semibold text-white">KHQR</div>
+                <div class="text-[10px] text-gray-500">Scan to pay</div>
+              </button>
+              <button type="button" data-pay="visa" class="pay-option glass rounded-xl p-3 text-center border-2 border-transparent">
+                <i class="fa-brands fa-cc-visa text-xl text-blue-400 mb-1 block"></i>
+                <div class="text-xs font-semibold text-white">Visa / Card</div>
+                <div class="text-[10px] text-gray-500">Online</div>
+              </button>
+              <button type="button" data-pay="cash" class="pay-option glass rounded-xl p-3 text-center border-2 border-transparent">
+                <i class="fa-solid fa-money-bill-wave text-xl text-green-400 mb-1 block"></i>
+                <div class="text-xs font-semibold text-white">Cash</div>
+                <div class="text-[10px] text-gray-500">Pay driver</div>
+              </button>
+            </div>
+
+            <!-- ============================================
+                 KHQR PANEL — with YOUR ACLEDA QR
+                 ============================================ -->
+            <div id="pay-khqr" class="pay-panel">
+              <div class="text-center">
+
+                <!-- Amount -->
+                <div class="mb-5">
+                  <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Scan to pay</div>
+                  <div class="font-display text-3xl font-bold gradient-text" id="qrAmount">$—</div>
+                  <div class="text-xs text-gray-500" id="qrAmountRiel">— ៛</div>
+                </div>
+
+                <!-- Your ACLEDA QR code (auto-generated) -->
+                <div class="inline-block p-4 rounded-2xl bg-white shadow-lg">
+                  <img
+                    id="khqrImg"
+                    alt="KHQR"
+                    class="block w-56 h-56 mx-auto"
+                  />
+                </div>
+
+                <!-- Account info -->
+                <div class="mt-5 flex items-center justify-center gap-3 text-xs">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-[11px]">
+                    ACL
+                  </div>
+                  <div class="text-left">
+                    <div class="text-white font-semibold">THOL NAIKEA</div>
+                    <div class="text-gray-500">ACLEDA Bank • <span class="font-mono">khqr@aclb</span></div>
+                  </div>
+                </div>
+
+                <p class="text-xs text-gray-400 mt-4">
+                  <i class="fa-solid fa-mobile-screen-button mr-1 text-neon-purple"></i>
+                  Open your ACLEDA / ABA / Wing app and scan this QR code to pay.
+                </p>
+
+                <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs">
+                  <span class="pulse-dot"></span>
+                  <span class="text-gray-300">Waiting for payment…</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visa panel -->
+            <div id="pay-visa" class="pay-panel hidden space-y-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Card number</label>
+                <input id="cardNumber" type="text" placeholder="1234 5678 9012 3456" maxlength="19" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Expiry</label>
+                  <input id="cardExpiry" type="text" placeholder="MM/YY" maxlength="5" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">CVV</label>
+                  <input id="cardCvv" type="text" placeholder="123" maxlength="4" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Name on card</label>
+                <input id="cardName" type="text" placeholder="As shown on card" class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+              </div>
+              <p class="text-[11px] text-gray-500 flex items-center gap-2">
+                <i class="fa-solid fa-lock text-green-400"></i> Secure SSL encrypted payment
+              </p>
+            </div>
+
+            <!-- Cash panel -->
+            <div id="pay-cash" class="pay-panel hidden">
+              <div class="glass rounded-xl p-6 text-center">
+                <i class="fa-solid fa-money-bill-wave text-4xl text-green-400 mb-3"></i>
+                <div class="font-semibold text-white text-sm mb-1">Pay driver in cash</div>
+                <div class="text-xs text-gray-400 max-w-xs mx-auto">
+                  Hand the fare directly to your driver when you arrive. USD and Riel both accepted.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Summary -->
+        <div class="space-y-4">
+          <div class="glass-strong rounded-2xl p-6 sticky top-6">
+            <h3 class="font-display text-sm font-semibold text-white uppercase tracking-wider mb-4">Your Trip</h3>
+
+            <div class="space-y-4 text-sm">
+              <div class="flex items-start gap-3">
+                <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="text-[10px] text-gray-500 uppercase tracking-wider">Pickup</div>
+                  <div class="text-gray-200 text-xs truncate" id="sumPickup">—</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="text-[10px] text-gray-500 uppercase tracking-wider">Drop-off</div>
+                  <div class="text-gray-200 text-xs truncate" id="sumDrop">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-white/10 my-5"></div>
+
+            <!-- Driver mini card -->
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center text-2xl" id="sumIcon">🏍️</div>
+              <div class="min-w-0">
+                <div class="font-semibold text-white text-sm truncate" id="sumDriver">—</div>
+                <div class="text-[11px] text-gray-500" id="sumVehicle">—</div>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between text-gray-400">
+                <span>Ride type</span><span class="text-gray-200" id="sumRideType">—</span>
+              </div>
+              <div class="flex justify-between text-gray-400">
+                <span>Distance</span><span class="text-gray-200" id="sumDistance">—</span>
+              </div>
+              <div class="flex justify-between text-gray-400">
+                <span>Duration</span><span class="text-gray-200" id="sumDuration">—</span>
+              </div>
+              <div class="flex justify-between text-gray-400">
+                <span>Base fare</span><span class="text-gray-200" id="sumBase">—</span>
+              </div>
+              <div class="flex justify-between text-gray-400">
+                <span>Distance fare</span><span class="text-gray-200" id="sumDistanceFare">—</span>
+              </div>
+              <div class="flex justify-between text-gray-400">
+                <span>Service fee</span><span class="text-gray-200" id="sumServiceFee">—</span>
+              </div>
+            </div>
+
+            <div class="border-t border-white/10 my-5"></div>
+
+            <div class="flex items-end justify-between">
+              <div>
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider">Total</div>
+                <div class="text-[10px] text-gray-500" id="sumTotalRiel">—</div>
+              </div>
+              <div class="font-display text-3xl font-bold gradient-text" id="sumTotal">$—</div>
+            </div>
+
+            <button type="submit" class="btn-gradient w-full mt-6 py-4 rounded-xl text-sm font-semibold">
+              <i class="fa-solid fa-lock mr-2"></i> Confirm & Pay
+            </button>
+
+            <p class="text-[10px] text-gray-500 text-center mt-3">
+              By confirming you agree to our Terms of Service.
+            </p>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    /* ================================================================
+       1. LOAD BOOKING DATA FROM LOCALSTORAGE
+       ================================================================ */
+    const pending = JSON.parse(localStorage.getItem('pendingBooking')  || 'null');
+    const vehicle = JSON.parse(localStorage.getItem('selectedVehicle') || 'null');
+
+    if (!pending || !vehicle) {
+      alert('Missing booking information. Please start again.');
+      window.location.href = 'index.html';
+    }
+
+    /* ================================================================
+       2. FILL SUMMARY
+       ================================================================ */
+    document.getElementById('sumPickup').textContent    = pending.pickup_location;
+    document.getElementById('sumDrop').textContent      = pending.drop_location;
+    document.getElementById('sumDriver').textContent    = vehicle.driver_name;
+    document.getElementById('sumVehicle').textContent   = vehicle.model + ' • ' + vehicle.plate;
+    document.getElementById('sumRideType').textContent  = vehicle.ride_type_name;
+    document.getElementById('sumDistance').textContent  = vehicle.distance_km + ' km';
+    document.getElementById('sumDuration').textContent  = vehicle.duration_min + ' min';
+    document.getElementById('sumIcon').textContent      = vehicle.ride_type === 'moto' ? '🏍️' : vehicle.ride_type === 'tuktuk' ? '🛺' : (vehicle.ride_type === 'economy' ? '🚗' : '🚙');
+
+    /* ================================================================
+       3. COMPUTE PRICE BREAKDOWN
+       ================================================================ */
+    const RIDE_RATES = {
+      moto:    { base: 0.15, rate: 0.15 },
+      tuktuk:  { base: 0.20, rate: 0.20 },
+      economy: { base: 0.25, rate: 0.30 },
+      comfort: { base: 0.40, rate: 0.40 }
+    };
+    const r = RIDE_RATES[pending.car_type] || RIDE_RATES.moto;
+
+    const km = parseFloat(vehicle.distance_km);
+    const baseFare     = r.base;
+    const distanceFare = km * r.rate;
+    const serviceFee   = 0.25;
+    const total        = Math.max(0.50, baseFare + distanceFare + serviceFee);
+
+    document.getElementById('sumBase').textContent         = '$' + baseFare.toFixed(2);
+    document.getElementById('sumDistanceFare').textContent = '$' + distanceFare.toFixed(2);
+    document.getElementById('sumServiceFee').textContent   = '$' + serviceFee.toFixed(2);
+    document.getElementById('sumTotal').textContent        = '$' + total.toFixed(2);
+    document.getElementById('sumTotalRiel').textContent    = Math.round(total * 4100).toLocaleString() + ' ៛';
+
+    /* ================================================================
+       4. GENERATE YOUR ACLEDA KHQR CODE (via public QR API)
+       ================================================================ */
+    const KHQR_STRING = '00020101021129380009khqr@aclb0111855194146640206ACLEDA391300042CCY01014520459995802KH53031165911THOL NAIKEA6010Phnom Penh621302090907771866304EE39';
+
+    const qrImg = document.getElementById('khqrImg');
+    if (qrImg) {
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=448x448&data=' +
+                  encodeURIComponent(KHQR_STRING) +
+                  '&margin=0';
+      qrImg.onload = () => console.log('✅ ACLEDA KHQR loaded');
+      qrImg.onerror = () => {
+        console.error('❌ QR failed to load, trying backup API');
+        qrImg.src = 'https://quickchart.io/qr?text=' +
+                    encodeURIComponent(KHQR_STRING) +
+                    '&size=448&margin=0';
+      };
+    }
+
+    // Show amount on the QR panel
+    const qrAmountEl = document.getElementById('qrAmount');
+    const qrAmountRielEl = document.getElementById('qrAmountRiel');
+    if (qrAmountEl) qrAmountEl.textContent = '$' + total.toFixed(2);
+    if (qrAmountRielEl) qrAmountRielEl.textContent = Math.round(total * 4100).toLocaleString() + ' ៛';
+
+    /* ================================================================
+       5. PAYMENT METHOD SWITCHER
+       ================================================================ */
+    const payButtons = document.querySelectorAll('.pay-option');
+    const panels = {
+      khqr: document.getElementById('pay-khqr'),
+      visa: document.getElementById('pay-visa'),
+      cash: document.getElementById('pay-cash')
+    };
+    let selectedMethod = 'khqr';
+
+    payButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        payButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        Object.values(panels).forEach(p => p.classList.add('hidden'));
+        const method = btn.dataset.pay;
+        panels[method].classList.remove('hidden');
+        selectedMethod = method;
+      });
+    });
+
+    /* ================================================================
+       6. CARD INPUT FORMATTERS
+       ================================================================ */
+    const cardNumber = document.getElementById('cardNumber');
+    cardNumber.addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g,'').slice(0,16);
+      e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
+    });
+
+    const cardExpiry = document.getElementById('cardExpiry');
+    cardExpiry.addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g,'').slice(0,4);
+      if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+      e.target.value = v;
+    });
+
+    /* ================================================================
+       7. SUBMIT → SAVE BOOKING + GO TO RECEIPT
+       ================================================================ */
+    document.getElementById('checkoutForm').addEventListener('submit', e => {
+      e.preventDefault();
+
+      const name  = document.getElementById('paxName').value.trim();
+      const phone = document.getElementById('paxPhone').value.trim();
+      const email = document.getElementById('paxEmail').value.trim();
+      const note  = document.getElementById('paxNote').value.trim();
+
+      if (!name || !phone || !email) {
+        alert('Please fill in your name, phone, and email.');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      if (selectedMethod === 'visa') {
+        const num = document.getElementById('cardNumber').value.replace(/\s/g,'');
+        const exp = document.getElementById('cardExpiry').value;
+        const cvv = document.getElementById('cardCvv').value;
+        const cn  = document.getElementById('cardName').value.trim();
+        if (num.length < 15 || !exp || cvv.length < 3 || !cn) {
+          alert('Please complete all card details.');
+          return;
+        }
+      }
+
+      const booking = {
+        id: 'KH-' + Math.floor(100000 + Math.random() * 900000),
+        createdAt: new Date().toISOString(),
+        passenger: { name, phone, email, note },
+        pickup_location: pending.pickup_location,
+        pickup_lat: pending.pickup_lat,
+        pickup_lng: pending.pickup_lng,
+        drop_location: pending.drop_location,
+        drop_lat: pending.drop_lat,
+        drop_lng: pending.drop_lng,
+        date: pending.date,
+        time: pending.time,
+        ride_type: pending.car_type,
+        ride_type_name: vehicle.ride_type_name,
+        driver_name: vehicle.driver_name,
+        driver_initial: vehicle.driver_initial,
+        driver_rating: vehicle.rating,
+        vehicle_model: vehicle.model,
+        vehicle_plate: vehicle.plate,
+        distance_km: vehicle.distance_km,
+        duration_min: vehicle.duration_min,
+        base_fare: baseFare.toFixed(2),
+        distance_fare: distanceFare.toFixed(2),
+        service_fee: serviceFee.toFixed(2),
+        total: total.toFixed(2),
+        total_riel: Math.round(total * 4100).toLocaleString() + ' ៛',
+        payment_method: selectedMethod
+      };
+
+      let history = JSON.parse(localStorage.getItem('bookings') || '[]');
+      history.unshift(booking);
+      localStorage.setItem('bookings', JSON.stringify(history));
+      localStorage.setItem('lastBooking', JSON.stringify(booking));
+
+      localStorage.removeItem('pendingBooking');
+      localStorage.removeItem('selectedVehicle');
+
+      window.location.href = 'receipt.html';
+    });
+  </script>
+</body>
+</html>

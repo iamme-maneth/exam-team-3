@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Available Rides — RideNow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink:{900:'#0A0A0F',800:'#12121A',700:'#1A1A24',600:'#242430'}, neon:{purple:'#A855F7',cyan:'#22D3EE',pink:'#EC4899'} },
+      fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { glow:'0 0 40px rgba(168,85,247,.35)' }
+    }}}
+  </script>
+  <style>
+    body { font-family:'Inter',sans-serif; background:#0A0A0F; color:#E5E7EB; overflow-x:hidden; }
+    .orb { position:fixed; border-radius:9999px; filter:blur(120px); opacity:.3; pointer-events:none; z-index:0; animation:float 20s ease-in-out infinite; }
+    .orb-1 { width:500px; height:500px; background:#A855F7; top:-200px; left:-200px; }
+    .orb-2 { width:400px; height:400px; background:#22D3EE; bottom:-150px; right:-150px; animation-delay:-7s; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.1);} 66%{transform:translate(-40px,50px) scale(.95);} }
+    .glass { background:rgba(26,26,36,.55); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); }
+    .glass-strong { background:rgba(18,18,26,.85); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); }
+    .gradient-text { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .btn-gradient { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); color:#fff; font-weight:600; transition:all .3s ease; }
+    .btn-gradient:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(168,85,247,.4); }
+    .ride-card { transition:all .3s ease; cursor:pointer; }
+    .ride-card:hover { transform:translateY(-4px); border-color:rgba(168,85,247,.5); box-shadow:0 20px 60px rgba(168,85,247,.25); }
+    .pulse-dot { width:8px; height:8px; background:#22D3EE; border-radius:50%; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,211,238,.7);} 70%{box-shadow:0 0 0 12px rgba(34,211,238,0);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <header class="relative z-10 px-4 sm:px-8 py-5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow">
+          <i class="fa-solid fa-bolt text-white text-lg"></i>
+        </div>
+        <span class="font-display text-2xl font-bold text-white">Ride<span class="gradient-text">Now</span></span>
+      </a>
+      <a href="index.html" class="text-sm text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back</a>
+    </div>
+  </header>
+
+  <main class="relative z-10 px-4 sm:px-8 py-8">
+    <div class="max-w-5xl mx-auto space-y-6">
+
+      <!-- Header -->
+      <div class="text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs mb-4">
+          <span class="pulse-dot"></span>
+          <span class="text-gray-300" id="availableCount">Finding drivers…</span>
+        </div>
+        <h1 class="font-display text-3xl sm:text-4xl font-bold text-white mb-2">Available <span class="gradient-text" id="rideTypeName">Rides</span></h1>
+        <p class="text-gray-400 text-sm">Tap any vehicle to continue with your booking.</p>
+      </div>
+
+      <!-- Trip summary -->
+      <div class="glass-strong rounded-2xl p-6">
+        <div class="grid sm:grid-cols-3 gap-4 text-sm">
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Pickup</div>
+            <div class="text-gray-200 text-xs" id="summaryPickup">—</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Drop-off</div>
+            <div class="text-gray-200 text-xs" id="summaryDrop">—</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">When</div>
+            <div class="text-gray-200 text-xs" id="summaryWhen">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rides list -->
+      <div id="ridesList" class="space-y-4"></div>
+
+      <!-- Back button -->
+      <div class="text-center pt-4">
+        <a href="index.html" class="text-sm text-gray-400 hover:text-white transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Change route or ride type
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* ---------- Load pending booking ---------- */
+    const pending = JSON.parse(localStorage.getItem('pendingBooking') || 'null');
+    if (!pending) {
+      alert('No booking found. Please start from the home page.');
+      window.location.href = 'index.html';
+    }
+
+    /* ---------- Ride type config ---------- */
+    const RIDE_CONFIG = {
+      moto:    { emoji: '🏍️', name: 'Moto',    base: 0.15, rate: 0.15, seats: 1, icon: '🏍️' },
+      tuktuk:  { emoji: '🛺', name: 'Tuk-Tuk', base: 0.20, rate: 0.20, seats: 4, icon: '🛺' },
+      economy: { emoji: '🚗', name: 'Economy', base: 0.25, rate: 0.30, seats: 4, icon: 'fa-solid fa-car' },
+      comfort: { emoji: '🚙', name: 'Comfort', base: 0.40, rate: 0.40, seats: 4, icon: 'fa-solid fa-car-side' }
+    };
+
+    const cfg = RIDE_CONFIG[pending.car_type] || RIDE_CONFIG.moto;
+
+    /* ---------- Sample drivers + vehicles (randomly generated) ---------- */
+    const FIRST_NAMES = ['Dara','Sopheak','Vibol','Chanthou','Rithy','Sokha','Pisey','Kosal','Bopha','Chanthy','Nary','Sreyleak','Mony','Vanna','Theary'];
+    const LAST_NAMES  = ['Sok','Chhay','Lim','Keo','Heng','Prak','Nhem','Tep','Kim','Ouk','Meas','Yin','Chea'];
+    const PLATES      = ['PP','SR','BTB','SHV','KPC','KPT'];
+
+    const CAR_MODELS = {
+      moto:    ['Honda Dream','Honda Wave','Yamaha Nouvo','Suzuki Smash','Honda PCX'],
+      tuktuk:  ['Bajaj RE','Piaggio Ape','TVS King','Cambodia Remork'],
+      economy: ['Toyota Corolla','Honda Civic','Kia Morning','Hyundai Accent'],
+      comfort: ['Toyota Camry','Honda CR-V','Lexus ES','Toyota Fortuner']
+    };
+
+    const COLORS = ['White','Black','Silver','Red','Blue','Gold'];
+
+    function random(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+    function randomPlate(){ return random(PLATES) + '-' + Math.floor(1000 + Math.random()*9000); }
+
+    /* ---------- Compute fares for the pending trip ---------- */
+    const km = parseFloat(pending.distance_km || '0');
+    const speed = pending.car_type === 'moto' ? 35 : 25;
+    const duration = Math.max(1, Math.round(km / speed * 60));
+
+    /* ---------- Generate 6 sample vehicles ---------- */
+    const vehicles = [];
+    for (let i = 0; i < 6; i++) {
+      const driverName = random(FIRST_NAMES) + ' ' + random(LAST_NAMES);
+      const rating = (4.5 + Math.random() * 0.5).toFixed(1);
+      const etaMin = 2 + Math.floor(Math.random() * 7);
+      const base = cfg.base;
+      const rate = cfg.rate;
+      // Small per-driver variation in fare (some are cheap, some are normal)
+      const variation = 0.9 + Math.random() * 0.3; // 0.9x – 1.2x
+      const fare = Math.max(0.50, (base + km * rate) * variation);
+
+      vehicles.push({
+        id: 'V-' + Math.floor(1000 + Math.random()*9000),
+        driver_name: driverName,
+        driver_initial: driverName.split(' ').map(n => n[0]).join(''),
+        rating: rating,
+        plate: randomPlate(),
+        model: random(CAR_MODELS[pending.car_type] || CAR_MODELS.economy),
+        color: random(COLORS),
+        eta_min: etaMin,
+        fare: fare.toFixed(2),
+        fare_riel: Math.round(fare * 4100).toLocaleString() + ' ៛',
+        distance_km: km,
+        duration_min: duration,
+        ride_type: pending.car_type,
+        ride_type_name: cfg.name
+      });
+    }
+
+    /* Sort by cheapest first */
+    vehicles.sort((a,b) => parseFloat(a.fare) - parseFloat(b.fare));
+
+    /* ---------- Fill summary ---------- */
+    document.getElementById('summaryPickup').textContent = pending.pickup_location;
+    document.getElementById('summaryDrop').textContent   = pending.drop_location;
+    document.getElementById('summaryWhen').textContent   = pending.date + ' • ' + pending.time;
+    document.getElementById('rideTypeName').textContent  = cfg.name;
+    document.getElementById('availableCount').textContent = vehicles.length + ' ' + cfg.name + (vehicles.length > 1 ? 's' : '') + ' nearby';
+
+    /* ---------- Render vehicle cards ---------- */
+    const list = document.getElementById('ridesList');
+    vehicles.forEach((v, idx) => {
+      const card = document.createElement('div');
+      card.className = 'ride-card glass-strong rounded-2xl p-6';
+
+      const visual = v.ride_type === 'moto' ? '🏍️' : v.ride_type === 'tuktuk' ? '🛺' : (v.ride_type === 'economy' ? '🚗' : '🚙');
+
+      card.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+          <!-- Vehicle visual -->
+          <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-4xl">${visual}</span>
+          </div>
+
+          <!-- Driver info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center font-bold text-white text-sm">${v.driver_initial}</div>
+              <div class="min-w-0">
+                <div class="font-semibold text-white truncate">${v.driver_name}</div>
+                <div class="text-xs text-yellow-400"><i class="fa-solid fa-star"></i> ${v.rating} · <span class="text-gray-500">${v.plate}</span></div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400">${v.model} • ${v.color}</div>
+            <div class="flex flex-wrap gap-3 mt-2 text-[11px]">
+              <span class="px-2 py-1 rounded-full bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20">
+                <i class="fa-solid fa-clock mr-1"></i>${v.eta_min} min away
+              </span>
+              <span class="px-2 py-1 rounded-full bg-neon-purple/10 text-neon-purple border border-neon-purple/20">
+                <i class="fa-solid fa-route mr-1"></i>${v.distance_km} km
+              </span>
+              <span class="px-2 py-1 rounded-full bg-neon-pink/10 text-neon-pink border border-neon-pink/20">
+                <i class="fa-solid fa-user mr-1"></i>${cfg.seats} seat${cfg.seats > 1 ? 's' : ''}
+              </span>
+            </div>
+          </div>
+
+          <!-- Fare + CTA -->
+          <div class="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:gap-2 sm:min-w-[140px] pt-4 sm:pt-0 border-t sm:border-t-0 sm:border-l border-white/10 sm:pl-5">
+            <div class="text-right">
+              <div class="font-display text-2xl font-bold gradient-text">$${v.fare}</div>
+              <div class="text-[10px] text-gray-500">${v.fare_riel}</div>
+            </div>
+            <button class="btn-gradient px-5 py-2.5 rounded-xl text-sm">
+              Book Now <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        localStorage.setItem('selectedVehicle', JSON.stringify(v));
+        window.location.href = 'checkout.html';
+      });
+
+      list.appendChild(card);
+    });
+  </script>
+</body>
+</html>

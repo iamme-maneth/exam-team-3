@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RideNow — Move at the speed of now</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink:{900:'#0A0A0F',800:'#12121A',700:'#1A1A24',600:'#242430'}, neon:{purple:'#A855F7',cyan:'#22D3EE',pink:'#EC4899'} },
+      fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { glow:'0 0 40px rgba(168,85,247,.35)' }
+    }}}
+  </script>
+  <style>
+    body { font-family:'Inter',sans-serif; background:#0A0A0F; color:#E5E7EB; overflow-x:hidden; }
+    .orb { position:fixed; border-radius:9999px; filter:blur(120px); opacity:.35; pointer-events:none; z-index:0; animation:float 20s ease-in-out infinite; }
+    .orb-1 { width:500px; height:500px; background:#A855F7; top:-200px; left:-200px; }
+    .orb-2 { width:400px; height:400px; background:#22D3EE; bottom:-150px; right:-150px; animation-delay:-7s; }
+    .orb-3 { width:350px; height:350px; background:#EC4899; top:40%; left:45%; animation-delay:-13s; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.1);} 66%{transform:translate(-40px,50px) scale(.95);} }
+    .glass { background:rgba(26,26,36,.55); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); }
+    .glass-strong { background:rgba(18,18,26,.85); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); }
+    .input-dark { background:rgba(10,10,15,.6); border:1px solid rgba(255,255,255,.08); color:#E5E7EB; transition:all .2s ease; }
+    .input-dark::placeholder { color:#6B7280; }
+    .input-dark:focus { outline:none; border-color:#A855F7; box-shadow:0 0 0 3px rgba(168,85,247,.15); background:rgba(10,10,15,.8); }
+    .gradient-text { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .btn-gradient { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); color:#fff; font-weight:600; transition:all .3s ease; position:relative; overflow:hidden; }
+    .btn-gradient::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,#22D3EE 0%,#A855F7 100%); opacity:0; transition:opacity .3s ease; }
+    .btn-gradient:hover::before { opacity:1; }
+    .btn-gradient:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(168,85,247,.4); }
+    .btn-gradient span { position:relative; z-index:1; }
+    .leaflet-container { font-family:'Inter',sans-serif; background:#12121A; }
+    .pin-pickup,.pin-drop { width:34px; height:34px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.4); }
+    .pin-pickup { background:linear-gradient(135deg,#A855F7 0%,#EC4899 100%); border:2px solid rgba(255,255,255,.9); }
+    .pin-drop { background:linear-gradient(135deg,#22D3EE 0%,#06B6D4 100%); border:2px solid rgba(255,255,255,.9); }
+    .pin-pickup::after,.pin-drop::after { content:''; width:10px; height:10px; border-radius:50%; background:#fff; transform:rotate(45deg); }
+    .autocomplete-list { background:rgba(18,18,26,.98); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 60px rgba(0,0,0,.6); }
+    .autocomplete-list li { color:#D1D5DB; border-bottom:1px solid rgba(255,255,255,.05); transition:all .15s ease; }
+    .autocomplete-list li:hover { background:rgba(168,85,247,.15); color:#fff; padding-left:24px; }
+    .autocomplete-list li:last-child { border-bottom:none; }
+    .pulse-dot { width:8px; height:8px; background:#22D3EE; border-radius:50%; box-shadow:0 0 0 0 rgba(34,211,238,.7); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,211,238,.7);} 70%{box-shadow:0 0 0 12px rgba(34,211,238,0);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
+    .leaflet-control-zoom a { background:rgba(26,26,36,.9)!important; color:#E5E7EB!important; border-color:rgba(255,255,255,.1)!important; }
+    .leaflet-control-zoom a:hover { background:rgba(168,85,247,.3)!important; }
+    .leaflet-control-attribution { background:rgba(10,10,15,.7)!important; color:#6B7280!important; }
+    .leaflet-control-attribution a { color:#A855F7!important; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- NAVBAR -->
+  <header class="relative z-10 px-4 sm:px-8 py-5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow group-hover:scale-105 transition">
+          <i class="fa-solid fa-bolt text-white text-lg"></i>
+        </div>
+        <div>
+          <span class="font-display text-2xl font-bold text-white tracking-tight">Ride<span class="gradient-text">Now</span></span>
+          <div class="text-[10px] text-gray-500 uppercase tracking-widest -mt-1">Fast · Safe · Modern</div>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm">
+        <a href="#book" class="text-gray-300 hover:text-white transition">Book</a>
+        <a href="#fleet" class="text-gray-300 hover:text-white transition">Fleet</a>
+        <a href="#how" class="text-gray-300 hover:text-white transition">How it works</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div class="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full glass text-xs">
+          <span class="pulse-dot"></span>
+          <span class="text-gray-300">2,847 drivers online</span>
+        </div>
+        <a href="login.html" class="px-5 py-2.5 rounded-xl glass text-sm font-medium text-gray-200 hover:bg-white/10 transition">Sign In</a>
+        <a href="register.html" class="px-5 py-2.5 rounded-xl btn-gradient text-sm"><span>Get Started</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative z-10 px-4 sm:px-8 pt-12 pb-4">
+    <div class="max-w-7xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs mb-6">
+        <span class="pulse-dot"></span>
+        <span class="text-gray-300">Now live across Cambodia 🇰🇭</span>
+      </div>
+      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
+        Move through the city<br>
+        <span class="gradient-text">at the speed of now.</span>
+      </h1>
+      <p class="text-gray-400 max-w-xl mx-auto text-base sm:text-lg">
+        Book a ride in seconds. Track your driver live. Pay seamlessly.
+      </p>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <main id="book" class="relative z-10 px-4 sm:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="glass-strong rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl">
+        <form id="bookingForm">
+          <div class="grid lg:grid-cols-2 gap-8">
+
+            <!-- FORM -->
+            <div class="space-y-5">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center">
+                  <i class="fa-solid fa-route text-white text-xs"></i>
+                </div>
+                <h2 class="font-display text-xl font-semibold text-white">Plan your route</h2>
+              </div>
+
+              <!-- Pickup -->
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Pickup</label>
+                <div class="relative">
+                  <div class="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center">
+                    <i class="fa-solid fa-circle text-[6px] text-white"></i>
+                  </div>
+                  <input id="pickupSearch" type="text" placeholder="Where should we pick you up?" autocomplete="off" class="input-dark w-full pl-14 pr-4 py-4 rounded-xl text-sm" />
+                  <ul id="pickupResults" class="autocomplete-list hidden absolute z-30 left-0 right-0 mt-2 rounded-xl max-h-64 overflow-y-auto text-sm"></ul>
+                </div>
+                <input type="hidden" name="pickup_location" id="pickupLocation" />
+                <input type="hidden" name="pickup_lat" id="pickupLat" />
+                <input type="hidden" name="pickup_lng" id="pickupLng" />
+              </div>
+
+              <!-- Drop -->
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Drop-off</label>
+                <div class="relative">
+                  <div class="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 flex items-center justify-center">
+                    <i class="fa-solid fa-location-dot text-[10px] text-white"></i>
+                  </div>
+                  <input id="dropSearch" type="text" placeholder="Where to?" autocomplete="off" class="input-dark w-full pl-14 pr-4 py-4 rounded-xl text-sm" />
+                  <ul id="dropResults" class="autocomplete-list hidden absolute z-30 left-0 right-0 mt-2 rounded-xl max-h-64 overflow-y-auto text-sm"></ul>
+                </div>
+                <input type="hidden" name="drop_location" id="dropLocation" />
+                <input type="hidden" name="drop_lat" id="dropLat" />
+                <input type="hidden" name="drop_lng" id="dropLng" />
+              </div>
+
+              <!-- Date + Time -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-calendar mr-1"></i> Date</label>
+                  <input type="date" name="pickup_date" id="pickupDate" required class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-clock mr-1"></i> Time</label>
+                  <input type="time" name="pickup_time" id="pickupTime" required class="input-dark w-full px-4 py-3 rounded-xl text-sm" />
+                </div>
+              </div>
+
+              <!-- Ride types — NO PRICE SHOWN -->
+              <div>
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Ride class</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+                  <label class="cursor-pointer">
+                    <input type="radio" name="car_type" value="moto" class="peer sr-only" checked />
+                    <div class="glass rounded-xl p-4 text-center transition peer-checked:border-neon-purple peer-checked:bg-neon-purple/10 hover:bg-white/5">
+                      <div class="text-2xl mb-1">🏍️</div>
+                      <div class="text-xs font-semibold text-white">Moto</div>
+                      <div class="text-[10px] text-gray-500 mt-0.5">1 person</div>
+                    </div>
+                  </label>
+
+                  <label class="cursor-pointer">
+                    <input type="radio" name="car_type" value="tuktuk" class="peer sr-only" />
+                    <div class="glass rounded-xl p-4 text-center transition peer-checked:border-neon-purple peer-checked:bg-neon-purple/10 hover:bg-white/5">
+                      <div class="text-2xl mb-1">🛺</div>
+                      <div class="text-xs font-semibold text-white">Tuk-Tuk</div>
+                      <div class="text-[10px] text-gray-500 mt-0.5">Up to 4</div>
+                    </div>
+                  </label>
+
+                  <label class="cursor-pointer">
+                    <input type="radio" name="car_type" value="economy" class="peer sr-only" />
+                    <div class="glass rounded-xl p-4 text-center transition peer-checked:border-neon-purple peer-checked:bg-neon-purple/10 hover:bg-white/5">
+                      <i class="fa-solid fa-car text-lg text-gray-400 mb-2"></i>
+                      <div class="text-xs font-semibold text-white">Economy</div>
+                      <div class="text-[10px] text-gray-500 mt-0.5">Up to 4</div>
+                    </div>
+                  </label>
+
+                  <label class="cursor-pointer">
+                    <input type="radio" name="car_type" value="comfort" class="peer sr-only" />
+                    <div class="glass rounded-xl p-4 text-center transition peer-checked:border-neon-purple peer-checked:bg-neon-purple/10 hover:bg-white/5">
+                      <i class="fa-solid fa-car-side text-lg text-gray-400 mb-2"></i>
+                      <div class="text-xs font-semibold text-white">Comfort</div>
+                      <div class="text-[10px] text-gray-500 mt-0.5">Up to 4</div>
+                    </div>
+                  </label>
+
+                </div>
+              </div>
+
+              <!-- Info box (no price) -->
+              <div class="glass rounded-2xl p-4 flex items-start gap-3">
+                <i class="fa-solid fa-circle-info text-neon-cyan mt-0.5"></i>
+                <div class="text-xs text-gray-400 leading-relaxed">
+                  You'll see available vehicles and the exact fare on the next page.
+                </div>
+              </div>
+
+              <button type="submit" class="btn-gradient w-full py-4 rounded-xl text-base">
+                <span><i class="fa-solid fa-magnifying-glass mr-2"></i> Find My Ride</span>
+              </button>
+            </div>
+
+            <!-- MAP -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-cyan to-blue-500 flex items-center justify-center">
+                    <i class="fa-solid fa-map-location-dot text-white text-xs"></i>
+                  </div>
+                  <h2 class="font-display text-xl font-semibold text-white">Pick on map</h2>
+                </div>
+                <button type="button" id="clearPins" class="text-xs text-gray-400 hover:text-neon-pink transition font-medium">
+                  <i class="fa-solid fa-trash-can mr-1"></i> Clear
+                </button>
+              </div>
+
+              <div class="flex flex-wrap gap-2 text-[10px]">
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass">
+                  <span class="w-2 h-2 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink"></span>
+                  <span class="text-gray-300">Pickup</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass">
+                  <span class="w-2 h-2 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500"></span>
+                  <span class="text-gray-300">Drop</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass">
+                  <i class="fa-solid fa-hand-pointer text-neon-purple"></i>
+                  <span class="text-gray-300">Click to place</span>
+                </div>
+              </div>
+
+              <div id="map" class="w-full h-[520px] rounded-2xl overflow-hidden border border-white/10"></div>
+
+              <p class="text-[11px] text-gray-500">
+                <i class="fa-solid fa-circle-info mr-1 text-neon-cyan"></i>
+                Tip: click the map to place the next pin, or drag a pin to fine-tune.
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="relative z-10 px-4 sm:px-8 py-8 mt-16 border-t border-white/5">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center">
+          <i class="fa-solid fa-bolt text-white text-[10px]"></i>
+        </div>
+        <span>© 2025 RideNow Cambodia. All rights reserved.</span>
+      </div>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-neon-purple transition">Privacy</a>
+        <a href="#" class="hover:text-neon-purple transition">Terms</a>
+        <a href="#" class="hover:text-neon-purple transition">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    /* ---------- CAMBODIA MAP ---------- */
+    const DEFAULT_CENTER = [11.5564, 104.9282];
+    const DEFAULT_ZOOM   = 7;
+    const CAMBODIA_BOUNDS = L.latLngBounds([10.40, 102.30], [14.70, 107.60]);
+
+    const map = L.map('map', {
+      center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM,
+      minZoom: 7, maxZoom: 19,
+      maxBounds: CAMBODIA_BOUNDS, maxBoundsViscosity: 1.0
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19, attribution: '© OpenStreetMap · © CARTO'
+    }).addTo(map);
+
+    const pickupIcon = L.divIcon({className:'',html:'<div class="pin-pickup"></div>',iconSize:[34,34],iconAnchor:[17,34]});
+    const dropIcon   = L.divIcon({className:'',html:'<div class="pin-drop"></div>',iconSize:[34,34],iconAnchor:[17,34]});
+
+    let pickupMarker=null, dropMarker=null, routeLine=null, nextPin='pickup';
+
+    const pickupSearch=document.getElementById('pickupSearch'), dropSearch=document.getElementById('dropSearch');
+    const pickupResults=document.getElementById('pickupResults'), dropResults=document.getElementById('dropResults');
+    const pickupLocation=document.getElementById('pickupLocation'), dropLocation=document.getElementById('dropLocation');
+    const pickupLat=document.getElementById('pickupLat'), pickupLng=document.getElementById('pickupLng');
+    const dropLat=document.getElementById('dropLat'), dropLng=document.getElementById('dropLng');
+
+    function setPickup(lat,lng,address){
+      if(pickupMarker) map.removeLayer(pickupMarker);
+      pickupMarker=L.marker([lat,lng],{icon:pickupIcon,draggable:true}).addTo(map);
+      pickupMarker.on('dragend',e=>{const p=e.target.getLatLng();reverseGeocode(p.lat,p.lng,a=>{
+        pickupSearch.value=a; pickupLocation.value=a;
+        pickupLat.value=p.lat; pickupLng.value=p.lng; drawRoute();
+      });});
+      pickupSearch.value=address; pickupLocation.value=address;
+      pickupLat.value=lat; pickupLng.value=lng; drawRoute();
+    }
+
+    function setDrop(lat,lng,address){
+      if(dropMarker) map.removeLayer(dropMarker);
+      dropMarker=L.marker([lat,lng],{icon:dropIcon,draggable:true}).addTo(map);
+      dropMarker.on('dragend',e=>{const p=e.target.getLatLng();reverseGeocode(p.lat,p.lng,a=>{
+        dropSearch.value=a; dropLocation.value=a;
+        dropLat.value=p.lat; dropLng.value=p.lng; drawRoute();
+      });});
+      dropSearch.value=address; dropLocation.value=address;
+      dropLat.value=lat; dropLng.value=lng; drawRoute();
+    }
+
+    map.on('click', e=>{
+      const {lat,lng}=e.latlng;
+      reverseGeocode(lat,lng,addr=>{
+        if(nextPin==='pickup'){setPickup(lat,lng,addr);nextPin='drop';}
+        else{setDrop(lat,lng,addr);nextPin='pickup';}
+      });
+    });
+
+    function reverseGeocode(lat,lng,cb){
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&countrycodes=kh`,{headers:{'Accept-Language':'en'}})
+        .then(r=>r.json()).then(d=>cb(d.display_name||`${lat.toFixed(5)}, ${lng.toFixed(5)}`))
+        .catch(()=>cb(`${lat.toFixed(5)}, ${lng.toFixed(5)}`));
+    }
+
+    function debounce(fn,ms=350){let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+    function searchAddress(q,el,onPick){
+      if(!q.trim()){el.classList.add('hidden');return;}
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=kh&q=${encodeURIComponent(q)}`,{headers:{'Accept-Language':'en'}})
+        .then(r=>r.json()).then(results=>{
+          el.innerHTML=''; if(!results.length){el.classList.add('hidden');return;}
+          results.forEach(r=>{
+            const li=document.createElement('li');
+            li.className='px-4 py-3 cursor-pointer text-xs';
+            li.innerHTML=`<i class="fa-solid fa-location-dot mr-2 text-neon-purple"></i>${r.display_name}`;
+            li.addEventListener('click',()=>{el.classList.add('hidden');onPick(parseFloat(r.lat),parseFloat(r.lon),r.display_name);});
+            el.appendChild(li);
+          });
+          el.classList.remove('hidden');
+        }).catch(()=>el.classList.add('hidden'));
+    }
+
+    pickupSearch.addEventListener('input', debounce(()=>searchAddress(pickupSearch.value,pickupResults,(lat,lng,a)=>{
+      setPickup(lat,lng,a);
+      if(dropMarker) map.fitBounds([pickupMarker.getLatLng(),dropMarker.getLatLng()],{padding:[40,40]});
+      else map.setView([lat,lng],15);
+    })));
+
+    dropSearch.addEventListener('input', debounce(()=>searchAddress(dropSearch.value,dropResults,(lat,lng,a)=>{
+      setDrop(lat,lng,a);
+      if(pickupMarker) map.fitBounds([pickupMarker.getLatLng(),dropMarker.getLatLng()],{padding:[40,40]});
+      else map.setView([lat,lng],15);
+    })));
+
+    document.addEventListener('click', e=>{
+      if(!e.target.closest('#pickupSearch') && !e.target.closest('#pickupResults')) pickupResults.classList.add('hidden');
+      if(!e.target.closest('#dropSearch') && !e.target.closest('#dropResults')) dropResults.classList.add('hidden');
+    });
+
+    function haversineKm(a,b,c,d){
+      const R=6371; const dLat=(c-a)*Math.PI/180; const dLon=(d-b)*Math.PI/180;
+      const x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;
+      return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+    }
+
+    function drawRoute(){
+      if(routeLine){map.removeLayer(routeLine);routeLine=null;}
+      if(!pickupMarker||!dropMarker) return;
+      const p=pickupMarker.getLatLng(), d=dropMarker.getLatLng();
+      routeLine=L.polyline([[p.lat,p.lng],[d.lat,d.lng]],{
+        color:'#A855F7',weight:5,opacity:.9,dashArray:'12, 8',lineCap:'round'
+      }).addTo(map);
+      map.fitBounds([[p.lat,p.lng],[d.lat,d.lng]],{padding:[40,40]});
+    }
+
+    const now = new Date();
+    document.getElementById('pickupDate').value = now.toISOString().split('T')[0];
+    document.getElementById('pickupTime').value = now.toTimeString().slice(0,5);
+
+    document.getElementById('clearPins').addEventListener('click',()=>{
+      if(pickupMarker){map.removeLayer(pickupMarker);pickupMarker=null;}
+      if(dropMarker){map.removeLayer(dropMarker);dropMarker=null;}
+      if(routeLine){map.removeLayer(routeLine);routeLine=null;}
+      [pickupSearch,dropSearch].forEach(el=>el.value='');
+      [pickupLocation,dropLocation,pickupLat,pickupLng,dropLat,dropLng].forEach(el=>el.value='');
+      nextPin='pickup'; map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    });
+
+    /* ---------- SUBMIT → save & go to available-rides.html ---------- */
+    document.getElementById('bookingForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      if(!pickupLat.value||!dropLat.value){
+        alert('Please select both pickup and drop locations on the map.');
+        return;
+      }
+      const selected = document.querySelector('input[name="car_type"]:checked');
+      const pending = {
+        pickup_location: pickupLocation.value,
+        pickup_lat: parseFloat(pickupLat.value),
+        pickup_lng: parseFloat(pickupLng.value),
+        drop_location: dropLocation.value,
+        drop_lat: parseFloat(dropLat.value),
+        drop_lng: parseFloat(dropLng.value),
+        car_type: selected.value,
+        date: document.getElementById('pickupDate').value,
+        time: document.getElementById('pickupTime').value,
+        distance_km: (haversineKm(
+          parseFloat(pickupLat.value), parseFloat(pickupLng.value),
+          parseFloat(dropLat.value), parseFloat(dropLng.value)
+        ) * 1.3).toFixed(1)
+      };
+      localStorage.setItem('pendingBooking', JSON.stringify(pending));
+      window.location.href = 'available-rides.html';
+    });
+
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        p=>{
+          const {latitude:lat, longitude:lng} = p.coords;
+          if(CAMBODIA_BOUNDS.contains([lat,lng])) map.setView([lat,lng], 13);
+        },
+        ()=>{}
+      );
+    }
+  </script>
+</body>
+</html>

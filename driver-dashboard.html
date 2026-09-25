@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Driver Dashboard — RideNow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink:{900:'#0A0A0F',800:'#12121A',700:'#1A1A24',600:'#242430'}, neon:{purple:'#A855F7',cyan:'#22D3EE',pink:'#EC4899'} },
+      fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { glow:'0 0 40px rgba(168,85,247,.35)' }
+    }}}
+  </script>
+  <style>
+    body { font-family:'Inter',sans-serif; background:#0A0A0F; color:#E5E7EB; overflow-x:hidden; }
+    .glass { background:rgba(26,26,36,.55); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); }
+    .glass-strong { background:rgba(18,18,26,.85); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); }
+    .gradient-text { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .btn-gradient { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); color:#fff; font-weight:600; transition:all .3s ease; }
+    .btn-gradient:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(168,85,247,.4); }
+    .sidebar-link { display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; border-radius:.75rem; font-size:.875rem; font-weight:500; color:#9CA3AF; transition:all .15s ease; cursor:pointer; }
+    .sidebar-link:hover { background:rgba(255,255,255,.05); color:#fff; }
+    .sidebar-link.active { background:linear-gradient(135deg,rgba(168,85,247,.2) 0%,rgba(34,211,238,.15) 100%); color:#fff; border:1px solid rgba(168,85,247,.3); }
+    .pulse-dot { width:8px; height:8px; background:#22D3EE; border-radius:50%; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,211,238,.7);} 70%{box-shadow:0 0 0 12px rgba(34,211,238,0);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="flex min-h-screen">
+
+    <aside class="hidden lg:flex lg:flex-col w-64 bg-ink-800/60 backdrop-blur-xl border-r border-white/5 p-6 fixed top-0 bottom-0 left-0 z-40">
+
+      <a href="index.html" class="flex items-center gap-3 mb-10">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow">
+          <i class="fa-solid fa-bolt text-white text-sm"></i>
+        </div>
+        <span class="font-display text-xl font-bold text-white">Ride<span class="gradient-text">Now</span></span>
+      </a>
+
+      <div class="flex items-center gap-3 p-3 rounded-xl glass mb-4">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 flex items-center justify-center font-bold text-white text-sm">MS</div>
+        <div class="min-w-0">
+          <div class="text-white font-semibold text-sm truncate">Michael Smith</div>
+          <div class="text-xs text-gray-500 truncate">Driver</div>
+        </div>
+      </div>
+
+      <div class="glass rounded-xl p-3 mb-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Status</div>
+            <div id="statusLabel" class="text-sm font-bold text-green-400">Online</div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="availabilityToggle" class="sr-only peer" checked>
+            <div class="w-12 h-6 bg-ink-600 rounded-full peer-checked:bg-green-500 transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
+          </label>
+        </div>
+      </div>
+
+      <nav class="flex-1 space-y-1">
+        <a href="#" class="sidebar-link active"><i class="fa-solid fa-gauge-high w-5"></i> Dashboard</a>
+        <a href="#requests" class="sidebar-link"><i class="fa-solid fa-bell w-5"></i> Requests</a>
+        <a href="#rides" class="sidebar-link"><i class="fa-solid fa-list-check w-5"></i> My Rides</a>
+        <a href="#earnings" class="sidebar-link"><i class="fa-solid fa-dollar-sign w-5"></i> Earnings</a>
+        <a href="#" class="sidebar-link"><i class="fa-solid fa-star w-5"></i> Reviews</a>
+      </nav>
+
+      <a href="login.html" class="mt-6 flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition font-medium text-sm">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+    </aside>
+
+    <div class="flex-1 lg:ml-64">
+
+      <header class="sticky top-0 z-30 glass-strong border-b border-white/5">
+        <div class="flex items-center justify-between px-4 sm:px-8 py-4">
+          <div class="flex items-center gap-3">
+            <button class="lg:hidden text-2xl text-white"><i class="fa-solid fa-bars"></i></button>
+            <h1 class="font-display text-lg font-bold text-white">Driver Dashboard</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="statusPill" class="lg:hidden text-xs font-bold px-3 py-1.5 rounded-full bg-green-500/20 text-green-400">● Online</span>
+            <button class="relative w-10 h-10 rounded-full glass flex items-center justify-center"><i class="fa-solid fa-bell text-gray-300"></i><span class="absolute top-2 right-2 w-2 h-2 bg-neon-pink rounded-full"></span></button>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 flex items-center justify-center font-bold text-white text-sm">MS</div>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-4 sm:p-8 space-y-6">
+
+        <section class="glass-strong rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+          <div class="absolute -top-20 -right-20 w-64 h-64 bg-neon-cyan/20 rounded-full blur-3xl"></div>
+          <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div>
+              <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-1">Welcome back, Michael 🚗</h2>
+              <p class="text-gray-400 text-sm">You've completed <span class="text-neon-cyan font-semibold">5 rides</span> today.</p>
+            </div>
+            <div class="flex gap-4">
+              <div class="text-center">
+                <div class="font-display text-2xl font-bold gradient-text">$84.20</div>
+                <div class="text-xs text-gray-500">Today</div>
+              </div>
+              <div class="w-px bg-white/10"></div>
+              <div class="text-center">
+                <div class="font-display text-2xl font-bold gradient-text">4h 12m</div>
+                <div class="text-xs text-gray-500">Online</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass rounded-2xl p-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center mb-3"><i class="fa-solid fa-car text-white text-sm"></i></div>
+            <div class="font-display text-2xl font-bold text-white">148</div>
+            <div class="text-xs text-gray-500 mt-1">Total Rides</div>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-neon-cyan flex items-center justify-center mb-3"><i class="fa-solid fa-dollar-sign text-white text-sm"></i></div>
+            <div class="font-display text-2xl font-bold text-white">$412.80</div>
+            <div class="text-xs text-gray-500 mt-1">This Week</div>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-3"><i class="fa-solid fa-star text-white text-sm"></i></div>
+            <div class="font-display text-2xl font-bold text-white">4.8</div>
+            <div class="text-xs text-gray-500 mt-1">Rating</div>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-cyan to-blue-500 flex items-center justify-center mb-3"><i class="fa-solid fa-thumbs-up text-white text-sm"></i></div>
+            <div class="font-display text-2xl font-bold text-white">98%</div>
+            <div class="text-xs text-gray-500 mt-1">Acceptance</div>
+          </div>
+        </section>
+
+        <!-- REQUESTS -->
+        <section id="requests" class="glass-strong rounded-2xl overflow-hidden">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+            <h3 class="font-display font-semibold text-white flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Incoming Requests
+            </h3>
+            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">2 new</span>
+          </div>
+
+          <div class="divide-y divide-white/5">
+
+            <div class="p-6 grid md:grid-cols-4 gap-4 items-center">
+              <div class="md:col-span-2 space-y-2">
+                <div class="flex items-start gap-3 text-sm">
+                  <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink shrink-0"></span>
+                  <div>
+                    <div class="text-[10px] text-gray-500 uppercase">Pickup</div>
+                    <div class="text-gray-200 text-xs">123 Main Street, Downtown</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 text-sm">
+                  <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 shrink-0"></span>
+                  <div>
+                    <div class="text-[10px] text-gray-500 uppercase">Drop</div>
+                    <div class="text-gray-200 text-xs">International Airport, T2</div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm">
+                <div class="font-display font-bold text-white">8.2 km</div>
+                <div class="font-display font-bold gradient-text">$18.20</div>
+                <div class="text-[10px] text-gray-500 mt-1">John D.</div>
+              </div>
+              <div class="flex gap-2">
+                <button class="reject-btn flex-1 py-3 glass rounded-lg text-xs font-semibold hover:bg-red-500/10 hover:text-red-400 transition">Reject</button>
+                <button class="accept-btn flex-1 py-3 btn-gradient rounded-lg text-xs">Accept</button>
+              </div>
+            </div>
+
+            <div class="p-6 grid md:grid-cols-4 gap-4 items-center">
+              <div class="md:col-span-2 space-y-2">
+                <div class="flex items-start gap-3 text-sm">
+                  <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink shrink-0"></span>
+                  <div>
+                    <div class="text-[10px] text-gray-500 uppercase">Pickup</div>
+                    <div class="text-gray-200 text-xs">Grand Hotel, 5th Avenue</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 text-sm">
+                  <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 shrink-0"></span>
+                  <div>
+                    <div class="text-[10px] text-gray-500 uppercase">Drop</div>
+                    <div class="text-gray-200 text-xs">Central Train Station</div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm">
+                <div class="font-display font-bold text-white">4.6 km</div>
+                <div class="font-display font-bold gradient-text">$11.40</div>
+                <div class="text-[10px] text-gray-500 mt-1">Sarah L.</div>
+              </div>
+              <div class="flex gap-2">
+                <button class="reject-btn flex-1 py-3 glass rounded-lg text-xs font-semibold hover:bg-red-500/10 hover:text-red-400 transition">Reject</button>
+                <button class="accept-btn flex-1 py-3 btn-gradient rounded-lg text-xs">Accept</button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ASSIGNED -->
+        <section id="rides" class="glass-strong rounded-2xl overflow-hidden">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+            <h3 class="font-display font-semibold text-white">My Assigned Rides</h3>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="text-gray-500 text-xs uppercase">
+                <tr class="border-b border-white/5">
+                  <th class="text-left px-6 py-3">ID</th>
+                  <th class="text-left px-6 py-3">Passenger</th>
+                  <th class="text-left px-6 py-3">Route</th>
+                  <th class="text-left px-6 py-3">Fare</th>
+                  <th class="text-left px-6 py-3">Status</th>
+                  <th class="text-right px-6 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                <tr class="hover:bg-white/5 transition">
+                  <td class="px-6 py-4 font-semibold text-white">#RN-1050</td>
+                  <td class="px-6 py-4 text-gray-300">John Doe</td>
+                  <td class="px-6 py-4 text-gray-300">Downtown → Airport</td>
+                  <td class="px-6 py-4 font-semibold gradient-text">$18.20</td>
+                  <td class="px-6 py-4"><span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-neon-purple/20 text-neon-purple border border-neon-purple/30">On the way</span></td>
+                  <td class="px-6 py-4 text-right"><button class="text-xs px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded-lg font-semibold hover:bg-blue-500/30 transition">Mark Arrived</button></td>
+                </tr>
+                <tr class="hover:bg-white/5 transition">
+                  <td class="px-6 py-4 font-semibold text-white">#RN-1049</td>
+                  <td class="px-6 py-4 text-gray-300">Sarah L.</td>
+                  <td class="px-6 py-4 text-gray-300">Hotel → Station</td>
+                  <td class="px-6 py-4 font-semibold gradient-text">$11.40</td>
+                  <td class="px-6 py-4"><span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30">Arrived</span></td>
+                  <td class="px-6 py-4 text-right"><button class="text-xs px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg font-semibold hover:bg-purple-500/30 transition">Start Ride</button></td>
+                </tr>
+                <tr class="hover:bg-white/5 transition">
+                  <td class="px-6 py-4 font-semibold text-white">#RN-1048</td>
+                  <td class="px-6 py-4 text-gray-300">David K.</td>
+                  <td class="px-6 py-4 text-gray-300">Mall → Home</td>
+                  <td class="px-6 py-4 font-semibold gradient-text">$9.10</td>
+                  <td class="px-6 py-4"><span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">In Progress</span></td>
+                  <td class="px-6 py-4 text-right"><button class="text-xs px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg font-semibold hover:bg-green-500/30 transition">Complete</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- EARNINGS -->
+        <section id="earnings" class="glass-strong rounded-2xl p-6">
+          <h3 class="font-display font-semibold text-white mb-6">Earnings Overview</h3>
+          <div class="grid sm:grid-cols-3 gap-4 mb-6">
+            <div class="glass rounded-xl p-4">
+              <div class="text-xs text-gray-500 mb-1">Today</div>
+              <div class="font-display text-2xl font-bold gradient-text">$84.20</div>
+              <div class="text-xs text-green-400 font-semibold mt-1">+12%</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+              <div class="text-xs text-gray-500 mb-1">This Week</div>
+              <div class="font-display text-2xl font-bold gradient-text">$412.80</div>
+              <div class="text-xs text-green-400 font-semibold mt-1">+8%</div>
+            </div>
+            <div class="glass rounded-xl p-4">
+              <div class="text-xs text-gray-500 mb-1">This Month</div>
+              <div class="font-display text-2xl font-bold gradient-text">$1,684.50</div>
+              <div class="text-xs text-green-400 font-semibold mt-1">+15%</div>
+            </div>
+          </div>
+
+          <div class="flex items-end justify-between gap-3 h-40 px-2">
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:40%"></div><div class="text-[10px] text-gray-500">Mon</div></div>
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:65%"></div><div class="text-[10px] text-gray-500">Tue</div></div>
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:55%"></div><div class="text-[10px] text-gray-500">Wed</div></div>
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:80%"></div><div class="text-[10px] text-gray-500">Thu</div></div>
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:90%"></div><div class="text-[10px] text-gray-500">Fri</div></div>
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:70%"></div><div class="text-[10px] text-gray-500">Sat</div></div>
+            <div class="flex flex-col items-center gap-2 flex-1"><div class="w-full rounded-t-lg bg-gradient-to-t from-neon-purple to-neon-cyan" style="height:50%"></div><div class="text-[10px] text-gray-500">Sun</div></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('availabilityToggle');
+    const statusLabel = document.getElementById('statusLabel');
+    const statusPill = document.getElementById('statusPill');
+    function updateStatusUI(){
+      if(toggle.checked){
+        statusLabel.textContent='Online'; statusLabel.className='text-sm font-bold text-green-400';
+        statusPill.textContent='● Online'; statusPill.className='lg:hidden text-xs font-bold px-3 py-1.5 rounded-full bg-green-500/20 text-green-400';
+      } else {
+        statusLabel.textContent='Offline'; statusLabel.className='text-sm font-bold text-gray-500';
+        statusPill.textContent='● Offline'; statusPill.className='lg:hidden text-xs font-bold px-3 py-1.5 rounded-full bg-gray-500/20 text-gray-400';
+      }
+    }
+    toggle.addEventListener('change', updateStatusUI);
+    updateStatusUI();
+
+    document.querySelectorAll('.accept-btn').forEach(b => b.addEventListener('click', () => alert('✅ Ride accepted!')));
+    document.querySelectorAll('.reject-btn').forEach(b => b.addEventListener('click', () => { if(confirm('Reject this request?')) alert('❌ Rejected.'); }));
+  </script>
+</body>
+</html>

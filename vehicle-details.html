@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Details — RideNow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink:{900:'#0A0A0F',800:'#12121A',700:'#1A1A24',600:'#242430'}, neon:{purple:'#A855F7',cyan:'#22D3EE',pink:'#EC4899'} },
+      fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { glow:'0 0 40px rgba(168,85,247,.35)' }
+    }}}
+  </script>
+  <style>
+    body { font-family:'Inter',sans-serif; background:#0A0A0F; color:#E5E7EB; overflow-x:hidden; }
+    .orb { position:fixed; border-radius:9999px; filter:blur(120px); opacity:.3; pointer-events:none; z-index:0; animation:float 20s ease-in-out infinite; }
+    .orb-1 { width:500px; height:500px; background:#A855F7; top:-200px; left:-200px; }
+    .orb-2 { width:400px; height:400px; background:#22D3EE; bottom:-150px; right:-150px; animation-delay:-7s; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.1);} 66%{transform:translate(-40px,50px) scale(.95);} }
+    .glass { background:rgba(26,26,36,.55); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); }
+    .glass-strong { background:rgba(18,18,26,.85); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); }
+    .gradient-text { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .btn-gradient { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); color:#fff; font-weight:600; transition:all .3s ease; }
+    .btn-gradient:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(168,85,247,.4); }
+    .pulse-dot { width:8px; height:8px; background:#22D3EE; border-radius:50%; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,211,238,.7);} 70%{box-shadow:0 0 0 12px rgba(34,211,238,0);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- HEADER -->
+  <header class="relative z-10 px-4 sm:px-8 py-5 border-b border-white/5">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow">
+          <i class="fa-solid fa-bolt text-white text-lg"></i>
+        </div>
+        <span class="font-display text-2xl font-bold text-white">Ride<span class="gradient-text">Now</span></span>
+      </a>
+      <a href="available-rides.html" class="text-sm text-gray-400 hover:text-white transition">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Back to list
+      </a>
+    </div>
+  </header>
+
+  <main class="relative z-10 px-4 sm:px-8 py-8">
+    <div class="max-w-5xl mx-auto">
+
+      <!-- STEP INDICATOR -->
+      <div class="flex items-center justify-center gap-3 mb-8 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center"><i class="fa-solid fa-check text-[10px]"></i></span>
+          <span class="text-gray-500">Route</span>
+        </div>
+        <div class="w-8 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center"><i class="fa-solid fa-check text-[10px]"></i></span>
+          <span class="text-gray-500">Choose ride</span>
+        </div>
+        <div class="w-8 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-gradient-to-br from-neon-purple to-neon-cyan text-white flex items-center justify-center font-bold text-[10px]">3</span>
+          <span class="text-white font-semibold">Vehicle details</span>
+        </div>
+        <div class="w-8 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-white/10 text-gray-500 flex items-center justify-center font-bold text-[10px]">4</span>
+          <span class="text-gray-500">Payment</span>
+        </div>
+      </div>
+
+      <!-- HERO CARD: The vehicle -->
+      <div class="glass-strong rounded-3xl p-6 sm:p-10 mb-6 relative overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-72 h-72 bg-neon-purple/20 rounded-full blur-3xl"></div>
+
+        <div class="relative z-10 grid lg:grid-cols-2 gap-8 items-center">
+
+          <!-- LEFT: Vehicle visual + info -->
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs mb-4">
+              <span class="pulse-dot"></span>
+              <span class="text-gray-300" id="vEta">Arriving in — min</span>
+            </div>
+
+            <div class="w-full h-48 rounded-2xl bg-gradient-to-br from-neon-purple/20 to-neon-cyan/20 flex items-center justify-center mb-6">
+              <span class="text-8xl" id="vEmoji">🏍️</span>
+            </div>
+
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-1" id="vModel">—</h2>
+            <div class="text-sm text-gray-400 mb-4" id="vPlate">—</div>
+
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="glass rounded-xl p-3">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Ride type</div>
+                <div class="text-xs font-semibold text-white" id="vRideType">—</div>
+              </div>
+              <div class="glass rounded-xl p-3">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Seats</div>
+                <div class="text-xs font-semibold text-white" id="vSeats">—</div>
+              </div>
+              <div class="glass rounded-xl p-3">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Color</div>
+                <div class="text-xs font-semibold text-white" id="vColor">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Driver + trip -->
+          <div class="space-y-6">
+
+            <!-- Driver -->
+            <div class="glass rounded-2xl p-5">
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Your driver</div>
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center font-bold text-white text-lg" id="vDriverInitial">—</div>
+                <div class="flex-1">
+                  <div class="font-semibold text-white text-base" id="vDriverName">—</div>
+                  <div class="text-xs text-yellow-400">
+                    <i class="fa-solid fa-star"></i> <span id="vDriverRating">—</span>
+                    <span class="text-gray-500 ml-1">· Verified driver</span>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="w-10 h-10 rounded-full glass flex items-center justify-center text-neon-cyan hover:bg-white/10 transition">
+                    <i class="fa-solid fa-phone text-sm"></i>
+                  </button>
+                  <button class="w-10 h-10 rounded-full glass flex items-center justify-center text-neon-purple hover:bg-white/10 transition">
+                    <i class="fa-solid fa-comment text-sm"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trip summary -->
+            <div class="glass rounded-2xl p-5">
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Your trip</div>
+              <div class="space-y-3 text-sm">
+                <div class="flex items-start gap-3">
+                  <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink shrink-0"></span>
+                  <div class="min-w-0">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider">Pickup</div>
+                    <div class="text-gray-200 text-xs truncate" id="vPickup">—</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-gradient-to-br from-neon-cyan to-blue-500 shrink-0"></span>
+                  <div class="min-w-0">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider">Drop-off</div>
+                    <div class="text-gray-200 text-xs truncate" id="vDrop">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fare breakdown -->
+            <div class="glass rounded-2xl p-5">
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Fare estimate</div>
+              <div class="space-y-2 text-sm mb-3">
+                <div class="flex justify-between text-gray-400">
+                  <span>Base fare</span><span class="text-gray-200" id="vBaseFare">—</span>
+                </div>
+                <div class="flex justify-between text-gray-400">
+                  <span>Distance (<span id="vKm">—</span>)</span><span class="text-gray-200" id="vDistanceFare">—</span>
+                </div>
+                <div class="flex justify-between text-gray-400">
+                  <span>Service fee</span><span class="text-gray-200" id="vServiceFee">—</span>
+                </div>
+              </div>
+              <div class="border-t border-white/10 pt-3 flex items-end justify-between">
+                <span class="text-xs text-gray-500">Total</span>
+                <div class="text-right">
+                  <div class="font-display text-2xl font-bold gradient-text" id="vTotal">$—</div>
+                  <div class="text-[10px] text-gray-500" id="vTotalRiel">— ៖</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a href="available-rides.html" class="flex-1 glass rounded-xl py-4 text-center text-sm font-semibold text-gray-200 hover:bg-white/10 transition">
+          <i class="fa-solid fa-arrow-left mr-2"></i> Choose another ride
+        </a>
+        <button id="continueBtn" class="flex-1 btn-gradient rounded-xl py-4 text-sm font-semibold">
+          <i class="fa-solid fa-credit-card mr-2"></i> Continue to payment
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* ---------- Load vehicle ---------- */
+    const pending = JSON.parse(localStorage.getItem('pendingBooking') || 'null');
+    const vehicle = JSON.parse(localStorage.getItem('selectedVehicle') || 'null');
+
+    if (!pending || !vehicle) {
+      alert('Missing vehicle. Please start again.');
+      window.location.href = 'index.html';
+    }
+
+    /* ---------- Fare rates ---------- */
+    const RIDE_RATES = {
+      moto:    { base: 0.15, rate: 0.15 },
+      tuktuk:  { base: 0.20, rate: 0.20 },
+      economy: { base: 0.25, rate: 0.30 },
+      comfort: { base: 0.40, rate: 0.40 }
+    };
+    const r = RIDE_RATES[pending.car_type] || RIDE_RATES.moto;
+    const km = parseFloat(vehicle.distance_km);
+    const baseFare     = r.base;
+    const distanceFare = km * r.rate;
+    const serviceFee   = 0.25;
+    const total        = Math.max(0.50, baseFare + distanceFare + serviceFee);
+
+    /* ---------- Seats per ride type ---------- */
+    const SEATS = { moto: 1, tuktuk: 4, economy: 4, comfort: 4 };
+
+    /* ---------- Populate page ---------- */
+    const emoji = vehicle.ride_type === 'moto' ? '🏍️' : vehicle.ride_type === 'tuktuk' ? '🛺' : (vehicle.ride_type === 'economy' ? '🚗' : '🚙');
+
+    document.getElementById('vEmoji').textContent         = emoji;
+    document.getElementById('vModel').textContent         = vehicle.model;
+    document.getElementById('vPlate').textContent         = vehicle.plate;
+    document.getElementById('vRideType').textContent      = vehicle.ride_type_name;
+    document.getElementById('vSeats').textContent         = SEATS[pending.car_type] + ' seat' + (SEATS[pending.car_type] > 1 ? 's' : '');
+    document.getElementById('vColor').textContent         = vehicle.color;
+    document.getElementById('vDriverInitial').textContent = vehicle.driver_initial;
+    document.getElementById('vDriverName').textContent    = vehicle.driver_name;
+    document.getElementById('vDriverRating').textContent  = vehicle.rating;
+    document.getElementById('vPickup').textContent        = pending.pickup_location;
+    document.getElementById('vDrop').textContent          = pending.drop_location;
+    document.getElementById('vEta').textContent           = 'Arriving in ' + vehicle.eta_min + ' min';
+
+    document.getElementById('vBaseFare').textContent      = '$' + baseFare.toFixed(2);
+    document.getElementById('vKm').textContent            = km + ' km';
+    document.getElementById('vDistanceFare').textContent  = '$' + distanceFare.toFixed(2);
+    document.getElementById('vServiceFee').textContent    = '$' + serviceFee.toFixed(2);
+    document.getElementById('vTotal').textContent         = '$' + total.toFixed(2);
+    document.getElementById('vTotalRiel').textContent     = Math.round(total * 4100).toLocaleString() + ' ៛';
+
+    /* ---------- Continue button ---------- */
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      window.location.href = 'checkout.html';
+    });
+  </script>
+</body>
+</html>

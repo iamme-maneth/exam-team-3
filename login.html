@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — RideNow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink:{900:'#0A0A0F',800:'#12121A',700:'#1A1A24'}, neon:{purple:'#A855F7',cyan:'#22D3EE',pink:'#EC4899'} },
+      fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { glow:'0 0 40px rgba(168,85,247,.35)' }
+    }}}
+  </script>
+  <style>
+    body { font-family:'Inter',sans-serif; background:#0A0A0F; color:#E5E7EB; overflow-x:hidden; }
+    .orb { position:fixed; border-radius:9999px; filter:blur(120px); opacity:.35; pointer-events:none; z-index:0; animation:float 20s ease-in-out infinite; }
+    .orb-1 { width:500px; height:500px; background:#A855F7; top:-200px; left:-200px; }
+    .orb-2 { width:400px; height:400px; background:#22D3EE; bottom:-150px; right:-150px; animation-delay:-7s; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.1);} 66%{transform:translate(-40px,50px) scale(.95);} }
+    .glass { background:rgba(26,26,36,.55); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); }
+    .glass-strong { background:rgba(18,18,26,.85); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); }
+    .input-dark { background:rgba(10,10,15,.6); border:1px solid rgba(255,255,255,.08); color:#E5E7EB; transition:all .2s ease; }
+    .input-dark::placeholder { color:#6B7280; }
+    .input-dark:focus { outline:none; border-color:#A855F7; box-shadow:0 0 0 3px rgba(168,85,247,.15); background:rgba(10,10,15,.8); }
+    .gradient-text { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .btn-gradient { background:linear-gradient(135deg,#A855F7 0%,#22D3EE 100%); color:#fff; font-weight:600; transition:all .3s ease; position:relative; overflow:hidden; }
+    .btn-gradient::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,#22D3EE 0%,#A855F7 100%); opacity:0; transition:opacity .3s ease; }
+    .btn-gradient:hover::before { opacity:1; }
+    .btn-gradient:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(168,85,247,.4); }
+    .btn-gradient span { position:relative; z-index:1; }
+    .pulse-dot { width:8px; height:8px; background:#22D3EE; border-radius:50%; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,211,238,.7);} 70%{box-shadow:0 0 0 12px rgba(34,211,238,0);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="relative z-10 min-h-screen flex">
+
+    <!-- LEFT PANEL -->
+    <aside class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 border-r border-white/5">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow">
+          <i class="fa-solid fa-bolt text-white text-lg"></i>
+        </div>
+        <span class="font-display text-2xl font-bold text-white">Ride<span class="gradient-text">Now</span></span>
+      </a>
+
+      <div>
+        <h2 class="font-display text-5xl font-bold text-white leading-tight mb-4">
+          Welcome<br><span class="gradient-text">back.</span>
+        </h2>
+        <p class="text-gray-400 mb-8 max-w-md">Sign in to book a ride in seconds, track drivers live, and manage your trips.</p>
+        <ul class="space-y-4 text-sm">
+          <li class="flex items-center gap-3 text-gray-300">
+            <span class="w-8 h-8 rounded-full bg-neon-purple/20 flex items-center justify-center"><i class="fa-solid fa-bolt text-neon-purple"></i></span>
+            Book rides 10x faster
+          </li>
+          <li class="flex items-center gap-3 text-gray-300">
+            <span class="w-8 h-8 rounded-full bg-neon-cyan/20 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-neon-cyan"></i></span>
+            Verified drivers, safe trips
+          </li>
+          <li class="flex items-center gap-3 text-gray-300">
+            <span class="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center"><i class="fa-solid fa-tag text-neon-pink"></i></span>
+            Transparent pricing
+          </li>
+        </ul>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs text-gray-500">
+        <span class="pulse-dot"></span>
+        <span>2,847 drivers online right now</span>
+      </div>
+    </aside>
+
+    <!-- RIGHT FORM -->
+    <main class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+      <div class="w-full max-w-md">
+
+        <a href="index.html" class="lg:hidden flex items-center justify-center gap-3 mb-10">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-glow">
+            <i class="fa-solid fa-bolt text-white text-lg"></i>
+          </div>
+          <span class="font-display text-2xl font-bold text-white">Ride<span class="gradient-text">Now</span></span>
+        </a>
+
+        <h1 class="font-display text-3xl font-bold text-white mb-2">Sign in</h1>
+        <p class="text-gray-500 text-sm mb-8">Enter your credentials to continue.</p>
+
+        <form id="loginForm" class="space-y-5 glass-strong rounded-2xl p-6 sm:p-8">
+
+          <div>
+            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Email</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+              <input id="email" type="email" placeholder="you@example.com" required class="input-dark w-full pl-11 pr-4 py-3.5 rounded-xl text-sm" />
+            </div>
+            <p class="text-red-400 text-xs mt-2 hidden" id="emailError">Please enter a valid email.</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Password</label>
+              <a href="#" class="text-xs text-neon-cyan hover:text-neon-purple transition">Forgot?</a>
+            </div>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+              <input id="password" type="password" placeholder="••••••••" required class="input-dark w-full pl-11 pr-12 py-3.5 rounded-xl text-sm" />
+              <button type="button" id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                <i class="fa-solid fa-eye" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <input id="remember" type="checkbox" class="w-4 h-4 rounded bg-ink-800 border-white/10 text-neon-purple focus:ring-neon-purple" />
+            <label for="remember" class="text-xs text-gray-400">Remember me for 30 days</label>
+          </div>
+
+          <button type="submit" class="btn-gradient w-full py-3.5 rounded-xl text-sm">
+            <span><i class="fa-solid fa-right-to-bracket mr-2"></i> Sign In</span>
+          </button>
+
+          <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+            <div class="relative flex justify-center text-[10px] uppercase tracking-widest">
+              <span class="px-3 bg-transparent text-gray-500" style="background:rgba(18,18,26,.85)">Or continue with</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" class="glass rounded-xl py-3 text-sm font-medium text-gray-200 hover:bg-white/10 transition flex items-center justify-center gap-2">
+              <i class="fa-brands fa-google text-red-400"></i> Google
+            </button>
+            <button type="button" class="glass rounded-xl py-3 text-sm font-medium text-gray-200 hover:bg-white/10 transition flex items-center justify-center gap-2">
+              <i class="fa-brands fa-facebook-f text-blue-400"></i> Facebook
+            </button>
+          </div>
+
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+          Don't have an account? <a href="register.html" class="text-white font-semibold hover:text-neon-purple transition">Create one</a>
+        </p>
+        <p class="text-center text-xs text-gray-600 mt-3">
+          <a href="index.html" class="hover:text-gray-400 transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back to home</a>
+        </p>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      eyeIcon.classList.toggle('fa-eye', !isHidden);
+      eyeIcon.classList.toggle('fa-eye-slash', isHidden);
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailError = document.getElementById('emailError');
+      if (!emailRegex.test(email)) { emailError.classList.remove('hidden'); return; }
+      emailError.classList.add('hidden');
+
+      if (passwordInput.value.length < 6) { alert('Password must be at least 6 characters.'); return; }
+
+      // Demo: store user + redirect to dashboard
+      localStorage.setItem('currentUser', JSON.stringify({ email, role: 'passenger' }));
+      alert('✅ Signed in! Redirecting to dashboard.');
+      window.location.href = 'passenger-dashboard.html';
+    });
+  </script>
+</body>
+</html>
